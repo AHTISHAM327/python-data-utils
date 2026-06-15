@@ -122,9 +122,50 @@ def flatten_dictionary(nes_dict: dict) -> dict:
         return {}
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    # Example usage
-    df = pd.DataFrame({"Column A": [1, 2], "Column B": [3, 4]})
-    cleaned_df = clean_column_names(df)
-    print(cleaned_df.columns)  # Output: Index(['column_a', 'column_b'], dtype='object')
+def validate_dataframe(df: pd.DataFrame, required_columns: list = None) -> bool:
+    """Validate that the DataFrame contains required columns and has no missing values.
+    Args:
+        df (pd.DataFrame): The DataFrame to validate.
+        required_columns (list, None ): A list of column names that must be present
+        in the DataFrame.
+    Returns:
+        bool: True if the DataFrame is valid, False otherwise.
+    """
+    if required_columns:
+        missing_columns = [col for col in required_columns if col not in df.columns]
+        for col in missing_columns:
+            logger.error(f"Required column '{col}' is missing from the DataFrame.")
+            return False
+
+    if df.isnull().sum().sum() > 0:
+        logger.error("The DataFrame contains missing values.")
+        return False
+
+    logger.info("DataFrame validation passed.")
+    return True
+
+
+# p07
+def count_total_rows(file_path: str, chunk_size: int = 1000) -> int:
+    """Count the total number of rows in a CSV file without loading the entire file into memory.
+    Args:
+        file_path (str): The path to the CSV file.
+        chunk_size (int): The number of rows to read at a time (default is 1000).
+    Returns:
+        int: The total number of rows in the CSV file.
+    """
+    total_rows = 0
+    try:
+        for chunk in pd.read_csv(file_path, chunksize=chunk_size):
+            total_rows += len(chunk)
+        logger.info(f"Total rows counted successfully: {total_rows}")
+        return total_rows
+    except FileNotFoundError:
+        logger.error(f"No file found at path: {file_path}")
+        return 0
+    except pd.errors.EmptyDataError:
+        logger.error(f"The file at path: {file_path} is empty.")
+        return 0
+    except Exception as e:
+        logger.error(f"An error occurred while counting rows in the CSV file: {e}")
+        return 0
