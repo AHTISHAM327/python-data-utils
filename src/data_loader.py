@@ -62,20 +62,46 @@ def get_columns(df: pd.DataFrame) -> list[str] | None:
 def filter_by_value(df: pd.DataFrame, col: str, val: float) -> pd.DataFrame | None:
     """Filter the DataFrame by a specific value in a column.
 
-    Args:
-        df (pd.DataFrame): The DataFrame to filter.
-        col (str): The column name to filter by.
-        val (float): The value to filter by.
+      Args:
+          df (pd.DataFrame): The DataFrame to filter.
+          col (str): The column name to filter by.
+          val (float): The value to filter by.
 
-    Returns:
-        pd.DataFrame: A filtered DataFrame containing only rows where the
-        specified column has the specified value.
+      Returns:
+          pd.DataFrame: A filtered DataFrame containing only rows where the
+          specified column has the specified value.
 
-    Example:
-        >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+      Example:
+          >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+    # Sample DataFrame for testing
+      df = pd.DataFrame(
+          {
+              "age": [25, None, 30, None, 22],
+              "salary": [50000, 60000, None, None, 45000],
+              "name": ["Ali", "Bob", None, "Dan", "Eve"],
+          }
+      )
+
+      print("\n--- get_columns ---")
+      print(get_columns(df))
+
+      print("\n--- get_shape ---")
+      print(get_shape(df))
+
+      print("\n--- get_missing_counts ---")
+      print(get_missing_counts(df))
+
+      print("\n--- get_missing_percent ---")
+      print(get_missing_percent(df))
+
+      print("\n--- get_high_missing_columns (threshold=5%) ---")
+      print(get_high_missing_columns(df, threshold=5.0))
+
+      print("\n--- filter_by_value (age == 25) ---")
+      print(filter_by_value(df, "age", 25))
         >>> filter_by_value(df, 'A', 2)
-               A  B
-            1  2  5
+                 A  B
+              1  2  5
     """
     try:
         filtered_df = df[df[col] == val]
@@ -169,32 +195,28 @@ def get_high_missing_columns(
         return None
 
 
+def chunk_csv_reader(filepath: str, chunk_size: int = 1000) -> Generator:
+    """Read a CSV file in chunks to handle large files efficiently.
+
+    Args:
+        filepath (str): The path to the CSV file.
+        chunk_size (int): The number of rows per chunk. Defaults to 1000.
+
+    Yields:
+        pd.DataFrame: A chunk of the DataFrame read from the CSV file.
+
+    Example:
+        for chunk in chunk_csv_reader('large_data.csv', chunk_size=500):
+            print(chunk.shape)
+    """
+    try:
+        for chunk in pd.read_csv(filepath, chunksize=chunk_size):
+            logger.info(f"Successfully read a chunk of size {chunk.shape}")
+            yield chunk
+    except Exception as e:
+        logger.error(f"Error reading CSV file in chunks from {filepath}: {e}")
+        return
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-
-    # Sample DataFrame for testing
-    df = pd.DataFrame(
-        {
-            "age": [25, None, 30, None, 22],
-            "salary": [50000, 60000, None, None, 45000],
-            "name": ["Ali", "Bob", None, "Dan", "Eve"],
-        }
-    )
-
-    print("\n--- get_columns ---")
-    print(get_columns(df))
-
-    print("\n--- get_shape ---")
-    print(get_shape(df))
-
-    print("\n--- get_missing_counts ---")
-    print(get_missing_counts(df))
-
-    print("\n--- get_missing_percent ---")
-    print(get_missing_percent(df))
-
-    print("\n--- get_high_missing_columns (threshold=5%) ---")
-    print(get_high_missing_columns(df, threshold=5.0))
-
-    print("\n--- filter_by_value (age == 25) ---")
-    print(filter_by_value(df, "age", 25))
