@@ -1,5 +1,8 @@
 import pandas as pd
 import logging
+import time
+from typing import Generator
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
@@ -169,3 +172,82 @@ def count_total_rows(file_path: str, chunk_size: int = 1000) -> int:
     except Exception as e:
         logger.error(f"An error occurred while counting rows in the CSV file: {e}")
         return 0
+
+
+def convert_column_dtype(df: pd.DataFrame, col: str, dtype: str) -> pd.DataFrame:
+    """Convert the data type of specified column in DataFrame.
+    Args:
+        df (pd.DataFrame): The DataFrame containing the column to convert.
+        col (str): The name of the column to convert.
+        dtype (str): The target data type (e.g., 'int', 'float', 'str').
+    Returns:
+        pd.DataFrame: The DataFrame with the converted column data type.
+    Example:
+        df = pd.DataFrame({"A": ["1", "2", "3"]})
+        converted_df = convert_column_dtype(df, "A", "int")
+        print(converted_df.dtypes)  # Output: A    int64
+    """
+    try:
+        df_clean = df.copy()
+        df_clean[col] = df_clean[col].astype(dtype)
+        logger.info(f"Column '{col}'Successfully converted to {dtype}.")
+        return df_clean
+    except KeyError:
+        logger.error(f"Column '{col}' not found in the DataFrame.")
+        return df
+    except ValueError as e:
+        logger.error(f"ValueError converting column '{col}' to {dtype}: {e}")
+        return df
+    except Exception as e:
+        logger.error(
+            f"An unexpected error occurred while converting column '{col}' to {dtype}: {e}"
+        )
+        return df
+
+
+# p09
+@contextmanager
+def execution_timer() -> Generator:
+    """A context manager to measure the execution time of a code block."""
+    start_time = time.time()
+    try:
+        yield
+    except Exception as e:
+        logger.error(f"An error occurred: {e}")
+    finally:
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+    logger.info(f"Execution time: {elapsed_time:.4f} seconds")
+
+
+class DataPipeline:
+    def __init__(self, df: pd.DataFrame):
+        self.df = df.copy()
+
+    def drop_missing(self) -> "DataPipeline":
+        """Drop rows with missing values from the DataFrame."""
+        try:
+            self.df = self.df.dropna()
+            logger.info("Missing values dropped successfully.")
+        except Exception as e:
+            logger.error(f"Error in  dropping the missing values :{e}")
+        return self
+
+    def get_result(self) -> pd.DataFrame:
+        """Returns the final processed DataFrame."""
+        return self.df
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    # # Example usage
+    # df = pd.DataFrame({"Column A": [1, 2], "Column B": [3, 4]})
+    # cleaned_df = clean_column_names(df)
+    # print(cleaned_df.columns)  # Output: Index(['column_a', 'column_b'], dtype='object')
+    # Create messy toy data
+    messy_data = pd.DataFrame({"A": [1, 2, None], "B": [4, None, 6]})
+
+    # Run the pipeline
+    final_df = DataPipeline(messy_data).drop_missing().get_result()
+    print("\nFinal Data:")
+    print(final_df)
