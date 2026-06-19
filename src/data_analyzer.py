@@ -1,5 +1,13 @@
-import pandas as pd
+from __future__ import annotations
+
 import logging
+
+# Try to import pandas; if it's not available in the environment, leave pd as None.
+# Using PEP 563 (future annotations) avoids NameError in type hints when pandas is absent.
+try:
+    import pandas as pd
+except Exception:
+    pd = None
 
 # Every function: type hints + docstring + try/except + logger — no exceptions
 logger = logging.getLogger(__name__)

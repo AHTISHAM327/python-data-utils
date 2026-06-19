@@ -1,5 +1,9 @@
 import pandas as pd
 import logging
+import chardet
+from pathlib import Path
+from typing import Generator
+from pandas.errors import EmptyDataError, ParserError
 
 logger = logging.getLogger(__name__)
 
@@ -218,5 +222,175 @@ def chunk_csv_reader(filepath: str, chunk_size: int = 1000) -> Generator:
         return
 
 
+def load_csv_safe(
+    path: str,
+    encoding: str | None = None,
+    dtype_spec: dict[str, str] | None = None,
+    low_memory: bool = False,
+) -> pd.DataFrame:
+    """Load a CSV file with automatic encoding detection and dtype control.
+
+    Args:
+        path: Absolute or relative path to the CSV file.
+        encoding: Character encoding (e.g. 'utf-8', 'latin-1'). If None,
+            chardet auto-detects it from the first 50 000 bytes.
+        dtype_spec: Optional dict mapping column names to dtype strings,
+            e.g. {"price": "float64", "customer_id": "str"}.
+        low_memory: Pass True for files larger than ~100 MB to avoid
+            dtype guessing across the entire file.
+
+    Returns:
+        pd.DataFrame: Loaded DataFrame with applied dtypes.
+
+    Raises:
+        FileNotFoundError: If the path does not exist.
+        ValueError: If the file is empty or unreadable.
+
+    Example:
+        >>> df = load_csv_safe("data/raw/olist/olist_orders_dataset.csv")
+        >>> print(df.shape)
+        (99441, 8)
+    """
+    try:
+        file_path = Path(path)
+        if not file_path.exists():
+            raise FileNotFoundError(f"CSV not found: {path}")
+
+        if encoding is None:
+            raw_bytes = file_path.read_bytes()[:50_000]
+            detected = chardet.detect(raw_bytes)
+            encoding = detected.get("encoding", "utf-8") or "utf-8"
+            logger.info(
+                "Auto-detected encoding: %s (confidence: %.2f)",
+                encoding,
+                detected.get("confidence", 0),
+            )
+
+        df = pd.read_csv(
+            file_path,
+            encoding=encoding,
+            dtype=dtype_spec,
+            low_memory=low_memory,
+        )
+
+        if df.empty:
+            raise ValueError(f"CSV loaded as empty DataFrame: {path}")
+
+        logger.info(
+            "Loaded %s — shape: %s, encoding: %s", file_path.name, df.shape, encoding
+        )
+        return df
+
+    except FileNotFoundError:
+        logger.error("File not found: %s", path)
+        raise
+    except UnicodeDecodeError as e:
+        logger.error("Encoding error in %s: %s. Try encoding='latin-1'", path, e)
+        raise
+    except pd.errors.ParserError as e:
+        logger.error("CSV parse error in %s: %s", path, e)
+        raise
+    except EmptyDataError:
+        logger.error("File is completely empty: %s", path)
+        raise ValueError(f"CSV is empty: {path}")
+    except ValueError:
+        logger.exception("Data validation failed for file: %s", path)
+        raise
+
+
+def load_multiple_csvs(
+    directory: str, pattern: str = "*.csv"
+) -> dict[str, pd.DataFrame]:
+    """Load all matching CSV files from a directory into a dictionary of DataFrames.
+
+    Args:
+        directory (str): Path to the folder containing the CSV files.
+        pattern (str): Glob pattern to filter files. Defaults to "*.csv".
+
+    Returns:
+        dict[str, pd.DataFrame]: A dictionary mapping the filename (without extension)
+        to its corresponding pandas DataFrame.
+
+    Raises:
+        FileNotFoundError: If the provided directory does not exist or is not a folder.
+
+    Example:
+
+    """
+    dir_path = Path(directory)
+    if not dir_path.exists():
+        raise FileNotFoundError(f"Directory not found: {directory}")
+    Data_dic = {}
+    failed_files = []
+    # what is .glob()
+    # .glob() returns a generator of Path objects matching the pattern
+    for file_path in dir_path.glob(pattern):
+        try:
+            df = load_csv_safe(str(file_path))
+            Data_dic[file_path.stem] = df
+        except Exception:
+            logger.exception("Failed to load %s", file_path.name)
+            failed_files.append(file_path.name)
+            # .stem returns the filename without the extension
+    if not Data_dic:
+        logger.warning("No CSV files loaded from %s (pattern=%s)", directory, pattern)
+    else:
+        logger.info(
+            "Successfully loaded %s files from %s (%s failed)",
+            len(Data_dic),
+            directory,
+            len(failed_files),
+        )
+    return Data_dic
+
+
+def infer_dtypes_report(df: pd.DataFrame) -> dict[str, str]:
+    """Inspect column dtypes and warn about unparsed datetime columns.
+
+    Args:
+        df (pd.DataFrame): The pandas DataFrame to inspect.
+
+    Returns:
+        dict[str, str]: A dictionary mapping column names to their string data types.
+
+    Raises:
+        TypeError: If the provided 'df' input is not a pandas DataFrame.
+    """
+    if not isinstance(df, pd.DataFrame):
+        logger.error("Expected a pandas DataFrame, got %s", type(df))
+        raise TypeError(f"Expected a pandas DataFrame, got {type(df)}")
+    res_Dict = {}
+    for col in df.columns:
+        d_type = str(df[col].dtype)
+        res_Dict[col] = d_type
+
+        is_datetime_like = any(
+            keyword in col.lower() for keyword in ("date", "time", "timestamp")
+        )
+        if d_type == "object" and is_datetime_like:
+            logger.warning(
+                "Column '%s' looks like a datetime but was loaded as object — consider pd.to_datetime()",
+                col,
+            )
+
+    return res_Dict
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
+    # Test 1: single file with encoding auto-detect
+    SCRIPT_DIR = Path(__file__).resolve().parent
+    TARGET_FILE = (
+        SCRIPT_DIR.parent / "data" / "raw" / "olist" / "olist_orders_dataset.csv"
+    )
+
+    orders = load_csv_safe(TARGET_FILE)
+    print(orders.shape)
+
+    # Test 2: multi-file load
+    all_dfs = load_multiple_csvs("data/raw/olist/")
+    print(list(all_dfs.keys()))
+
+    # Test 3: dtype report
+    report = infer_dtypes_report(orders)
+    print(report)
