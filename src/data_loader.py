@@ -3,7 +3,7 @@ import logging
 import chardet
 from pathlib import Path
 from typing import Generator
-from pandas.errors import EmptyDataError, ParserError
+
 
 logger = logging.getLogger(__name__)
 
@@ -75,37 +75,7 @@ def filter_by_value(df: pd.DataFrame, col: str, val: float) -> pd.DataFrame | No
           pd.DataFrame: A filtered DataFrame containing only rows where the
           specified column has the specified value.
 
-      Example:
-          >>> df = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
-    # Sample DataFrame for testing
-      df = pd.DataFrame(
-          {
-              "age": [25, None, 30, None, 22],
-              "salary": [50000, 60000, None, None, 45000],
-              "name": ["Ali", "Bob", None, "Dan", "Eve"],
-          }
-      )
-
-      print("\n--- get_columns ---")
-      print(get_columns(df))
-
-      print("\n--- get_shape ---")
-      print(get_shape(df))
-
-      print("\n--- get_missing_counts ---")
-      print(get_missing_counts(df))
-
-      print("\n--- get_missing_percent ---")
-      print(get_missing_percent(df))
-
-      print("\n--- get_high_missing_columns (threshold=5%) ---")
-      print(get_high_missing_columns(df, threshold=5.0))
-
-      print("\n--- filter_by_value (age == 25) ---")
-      print(filter_by_value(df, "age", 25))
-        >>> filter_by_value(df, 'A', 2)
-                 A  B
-              1  2  5
+     
     """
     try:
         filtered_df = df[df[col] == val]
@@ -314,8 +284,6 @@ def load_multiple_csvs(
     Raises:
         FileNotFoundError: If the provided directory does not exist or is not a folder.
 
-    Example:
-
     """
     dir_path = Path(directory)
     if not dir_path.exists():
@@ -330,8 +298,8 @@ def load_multiple_csvs(
             Data_dic[file_path.stem] = df
         except (
             FileNotFoundError,
-            EmptyDataError,
-            ParserError,
+            pd.errors.EmptyDataError,
+            pd.errors.ParserError,
         ):
             logger.exception("Failed to load %s", file_path.name)
             failed_files.append(file_path.name)
