@@ -328,7 +328,11 @@ def load_multiple_csvs(
         try:
             df = load_csv_safe(str(file_path))
             Data_dic[file_path.stem] = df
-        except Exception:
+        except (
+            FileNotFoundError,
+            EmptyDataError,
+            ParserError,
+        ):
             logger.exception("Failed to load %s", file_path.name)
             failed_files.append(file_path.name)
             # .stem returns the filename without the extension
@@ -369,7 +373,8 @@ def infer_dtypes_report(df: pd.DataFrame) -> dict[str, str]:
         )
         if d_type == "object" and is_datetime_like:
             logger.warning(
-                "Column '%s' looks like a datetime but was loaded as object — consider pd.to_datetime()",
+                "Column '%s' looks like a datetime but was loaded as "
+                "object — consider pd.to_datetime()",
                 col,
             )
 
