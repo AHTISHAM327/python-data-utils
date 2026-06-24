@@ -3,7 +3,8 @@ import logging
 import chardet
 from pathlib import Path
 from typing import Generator
-
+from typing import Optional
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -66,16 +67,16 @@ def get_columns(df: pd.DataFrame) -> list[str] | None:
 def filter_by_value(df: pd.DataFrame, col: str, val: float) -> pd.DataFrame | None:
     """Filter the DataFrame by a specific value in a column.
 
-      Args:
-          df (pd.DataFrame): The DataFrame to filter.
-          col (str): The column name to filter by.
-          val (float): The value to filter by.
+    Args:
+        df (pd.DataFrame): The DataFrame to filter.
+        col (str): The column name to filter by.
+        val (float): The value to filter by.
 
-      Returns:
-          pd.DataFrame: A filtered DataFrame containing only rows where the
-          specified column has the specified value.
+    Returns:
+        pd.DataFrame: A filtered DataFrame containing only rows where the
+        specified column has the specified value.
 
-     
+
     """
     try:
         filtered_df = df[df[col] == val]
@@ -260,7 +261,7 @@ def load_csv_safe(
     except pd.errors.ParserError as e:
         logger.error("CSV parse error in %s: %s", path, e)
         raise
-    except EmptyDataError:
+    except pd.errors.EmptyDataError:
         logger.error("File is completely empty: %s", path)
         raise ValueError(f"CSV is empty: {path}")
     except ValueError:
@@ -347,6 +348,125 @@ def infer_dtypes_report(df: pd.DataFrame) -> dict[str, str]:
             )
 
     return res_Dict
+
+
+def delivery_time_by_seller(df: pd.DataFrame, min_orders: int = 30) -> pd.DataFrame:
+    """Finds sellers with the highest average delivery times.
+
+    Args:
+        df: Cleaned DataFrame containing seller_id, delivery_days, order_id, and late_delivery.
+        min_orders: Minimum unique orders required to be included (default is 30).
+
+    Returns:
+        DataFrame of sellers ranked highest to lowest by average delivery days.
+    """
+    return (
+        df.groupby("seller_id")
+        .agg(
+            avg_delivery_days=("delivery_days", "mean"),
+            order_count=("order_id", "nunique"),
+            pct_late=("late_delivery", "mean"),
+        )
+        .query("order_count >= @min_orders")
+        .sort_values("avg_delivery_days", ascending=False)
+        .reset_index()
+    )
+
+
+def late_delivery_by_month(df: pd.DataFrame) -> pd.DataFrame:
+    """Calculates the percentage of late deliveries for each month.
+
+    Args:
+        df: Cleaned DataFrame containing purchase_month, order_id, and late_delivery.
+
+    Returns:
+        DataFrame sorted chronologically by month with order counts and late percentages.
+    """
+    return (
+        df.groupby("purchase_month")
+        .agg(
+            order_count=("order_id", "nunique"),
+            pct_late=("late_delivery", lambda x: x.mean() * 100),
+        )
+        .sort_values("purchase_month")
+        .reset_index()
+    )
+
+
+def worst_sellers_by_on_time_rate(
+    df: pd.DataFrame, min_orders: int = 20, top_n: int = 20
+) -> pd.DataFrame:
+    """Finds sellers with the lowest on-time delivery rates.
+
+    Args:
+        df: Cleaned DataFrame containing seller_id, order_id, and late_delivery.
+        min_orders: Minimum unique orders required to be included (default is 20).
+        top_n: Number of worst-performing sellers to return (default is 20).
+
+    Returns:
+        DataFrame of the worst sellers sorted by lowest on-time rate.
+    """
+    return (
+        df.groupby("seller_id")
+        .agg(
+            order_count=("order_id", "nunique"),
+            # late_delivery.mean() is the late rate. 1 minus that is the on-time rate!
+            on_time_rate=("late_delivery", lambda x: 1 - x.mean()),
+        )
+        .query("order_count >= @min_orders")
+        .sort_values("on_time_rate", ascending=True)
+        .head(top_n)
+        .reset_index()
+    )
+
+
+def avg_order_value_by_state(
+    df: pd.DataFrame, customers_df: pd.DataFrame
+) -> pd.DataFrame:
+    """Calculates the average order value and total orders per customer state."""
+
+    logger.info("Calculating average order value. Starting orders: %d", len(df))
+
+    result = (
+        df.merge(customers_df, on="customer_id", how="inner")
+        .groupby("customer_state")
+        .agg(avg_order_value=("price", "mean"), order_count=("order_id", "nunique"))
+        .sort_values("avg_order_value", ascending=False)
+        .reset_index()
+    )
+
+    logger.info("State grouping complete. Outputting %d distinct states.", len(result))
+
+    return result
+
+
+def add_seller_delivery_rank(df: pd.DataFrame) -> pd.DataFrame:
+    """Adds seller-specific delivery context to each individual order.
+
+    Args:
+        df: Cleaned orders DataFrame containing seller_id and delivery_days.
+
+    Returns:
+        DataFrame with new columns 'seller_avg_delivery' and 'delivery_vs_seller_pct'.
+    """
+    logger.info("Adding seller delivery ranks to %d orders.", len(df))
+
+    # Create a copy to avoid mutating the original dataframe directly
+    result = df.copy()
+
+    # 1. Add the seller's overall average delivery time to every row
+    result["seller_avg_delivery"] = result.groupby("seller_id")[
+        "delivery_days"
+    ].transform("mean")
+
+    # 2. Add the percentile rank (e.g., 0.90 means this order was slower than 90% of their others)
+    result["delivery_vs_seller_pct"] = result.groupby("seller_id")[
+        "delivery_days"
+    ].transform(lambda x: x.rank(pct=True))
+
+    logger.info("Successfully added context columns. New shape: %s", result.shape)
+
+    return result
 
 
 if __name__ == "__main__":
