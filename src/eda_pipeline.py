@@ -7,6 +7,7 @@ import sys
 import pandas as pd
 import logging
 
+sys.path.insert(0, ".")
 
 from src.data_loader import load_multiple_csvs
 from src.data_cleaner import (
@@ -15,7 +16,6 @@ from src.data_cleaner import (
     optimize_memory,
 )
 
-sys.path.insert(0, ".")
 logger = logging.getLogger(__name__)
 
 

@@ -1,0 +1,99 @@
+2026-06-20 17:17:05,823 - INFO - Data cleaner module executed directly.
+2026-06-20 17:17:05,868 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-20 17:17:06,041 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-20 17:17:06,061 - INFO - Found 3 columns with nulls
+2026-06-20 17:17:06,065 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-20 17:17:06,087 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-20 17:17:06,093 - INFO - Found 8 columns with nulls
+2026-06-20 18:16:25,071 - INFO - Data cleaner module executed directly.
+2026-06-20 18:16:25,105 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-20 18:16:25,288 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-20 18:16:25,290 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-20 18:16:25,314 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-20 18:16:25,322 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 15:42:34,366 - INFO - Data cleaner module executed directly.
+2026-06-22 15:42:34,412 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 15:42:34,595 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 15:42:34,598 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 15:42:34,621 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 15:42:34,630 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 15:42:34,646 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 15:42:34,660 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 15:42:34,672 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 15:42:34,678 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 15:44:12,933 - INFO - Data cleaner module executed directly.
+2026-06-22 15:44:12,961 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 15:44:13,133 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 15:44:13,135 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 15:44:13,157 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 15:44:13,163 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 15:44:13,177 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 15:44:13,190 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 15:44:13,202 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 15:44:13,208 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 17:24:05,175 - INFO - Data cleaner module executed directly.
+2026-06-22 17:24:05,212 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:24:05,400 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 17:24:05,403 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:24:05,426 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 17:24:05,438 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 17:24:05,457 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 17:24:05,471 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 17:24:05,484 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 17:24:05,491 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 17:24:05,600 - INFO - Memory: 30.28 MB -> 24.88 MB (17.8% reduction)
+2026-06-22 17:28:23,587 - INFO - Data cleaner module executed directly.
+2026-06-22 17:28:23,614 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:28:23,796 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 17:28:23,798 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:28:23,822 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 17:28:23,829 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 17:28:23,844 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 17:28:23,858 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 17:28:23,870 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 17:28:23,876 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 17:28:23,980 - INFO - Memory: 30.28 MB -> 24.88 MB (17.8% reduction)
+2026-06-22 17:28:41,518 - INFO - Data cleaner module executed directly.
+2026-06-22 17:28:41,543 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:28:41,735 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 17:28:41,737 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:28:41,794 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 17:28:41,799 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 17:28:41,814 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 17:28:41,827 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 17:28:41,840 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 17:28:41,846 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 17:28:41,953 - INFO - Memory: 30.28 MB -> 24.88 MB (17.8% reduction)
+2026-06-22 17:30:16,106 - INFO - Data cleaner module executed directly.
+2026-06-22 17:30:16,132 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:30:16,346 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 17:30:16,348 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:30:16,370 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 17:30:16,376 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 17:30:16,391 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 17:30:16,405 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 17:30:16,418 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 17:30:16,423 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 17:30:16,533 - INFO - Memory: 30.28 MB -> 24.88 MB (17.8% reduction)
+2026-06-22 17:33:33,841 - INFO - Data cleaner module executed directly.
+2026-06-22 17:33:33,871 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:33:34,050 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 17:33:34,052 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:33:34,075 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 17:33:34,083 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 17:33:34,098 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 17:33:34,111 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 17:33:34,123 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 17:33:34,129 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 17:33:34,234 - INFO - Memory: 30.28 MB -> 24.88 MB (17.8% reduction)
+2026-06-22 17:34:53,185 - INFO - Data cleaner module executed directly.
+2026-06-22 17:34:53,218 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:34:53,400 - INFO - Loaded olist_orders_dataset.csv — shape: (99441, 8), encoding: ascii
+2026-06-22 17:34:53,402 - INFO - Auto-detected encoding: ascii (confidence: 1.00)
+2026-06-22 17:34:53,426 - INFO - Loaded olist_products_dataset.csv — shape: (32951, 9), encoding: ascii
+2026-06-22 17:34:53,435 - INFO - Successfully applied strategies to 3 columns
+2026-06-22 17:34:53,451 - INFO - Converted column 'order_purchase_timestamp' to datetime
+2026-06-22 17:34:53,465 - INFO - Converted column 'order_approved_at' to datetime
+2026-06-22 17:34:53,477 - INFO - Converted column 'order_delivered_customer_date' to datetime
+2026-06-22 17:34:53,484 - INFO - Converted column 'order_estimated_delivery_date' to datetime
+2026-06-22 17:34:53,593 - INFO - Memory: 30.28 MB -> 24.88 MB (17.8% reduction)
