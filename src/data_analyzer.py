@@ -296,6 +296,142 @@ def add_seller_delivery_rank(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
+def monthly_order_trends(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Computes monthly order volume, revenue, and delivery KPIs.
+
+    Args:
+        df: The cleaned orders DataFrame containing order items and delivery data.
+
+    Returns:
+        DataFrame with monthly aggregated trends and month-over-month growth.
+    """
+    try:
+        # 1. Set and sort the datetime index (Mandatory for time-series)
+        df_ts = df.set_index("order_purchase_timestamp").sort_index()
+
+        # 2. Resample to Month-End ("ME") and aggregate core metrics
+        monthly = df_ts.resample("ME").agg(
+            order_count=("order_id", "nunique"),
+            total_revenue=("price", "sum"),
+            avg_delivery_days=("delivery_days", "mean"),
+            late_pct=("late_delivery", "mean"),
+        )
+
+        # 3. Calculate percentage change and rolling averages
+        monthly["mom_order_growth"] = monthly["order_count"].pct_change() * 100
+        monthly["revenue_4wk_rolling"] = monthly["total_revenue"].rolling(4).mean()
+
+        # 4. Flatten the index and rename the date column for readability
+        monthly = monthly.reset_index().rename(
+            columns={"order_purchase_timestamp": "month"}
+        )
+
+        logger.info("Monthly trends computed: %d months", len(monthly))
+        return monthly
+
+    except KeyError as e:
+        logger.exception("Missing column for time-series: %s", e)
+        raise
+
+
+def weekly_volume_with_rolling_avg(df: pd.DataFrame, window: int = 4) -> pd.DataFrame:
+    """
+    Calculates weekly order volume and its moving average.
+
+    Args:
+        df: The cleaned orders DataFrame.
+        window: The number of weeks to include in the rolling average.
+
+    Returns:
+        DataFrame with columns: week, order_count, and rolling_avg.
+    """
+    df_ts = df.set_index("order_purchase_timestamp").sort_index()
+    weekly = df_ts.resample("W").agg(order_count=("order_id", "nunique"))
+
+    # Apply the rolling window
+    weekly["rolling_avg"] = weekly["order_count"].rolling(window=window).mean()
+
+    # Check and log expected NaN values
+    if weekly["rolling_avg"].isna().any():
+        logger.warning(
+            "NaN values present in rolling average (expected for first %d rows).",
+            window - 1,
+        )
+
+    # Flatten the index and rename the date column
+    weekly = weekly.reset_index().rename(columns={"order_purchase_timestamp": "week"})
+
+    return weekly
+
+
+def detect_growth_periods(
+    df: pd.DataFrame, metric: str = "order_count"
+) -> pd.DataFrame:
+    """
+    Classifies each month as growth, decline, or stable based on mom_order_growth.
+
+    Args:
+        df: The cleaned orders DataFrame.
+        metric: The column to base the growth classification on.
+
+    Returns:
+        DataFrame with an added 'period_label' column.
+    """
+    # Call the previous function internally
+    monthly = monthly_order_trends(df)
+
+    # Define the classification logic
+    def classify_growth(pct):
+        if pd.isna(pct):
+            return "unknown"
+        elif pct > 5.0:
+            return "growth"
+        elif pct < -5.0:
+            return "decline"
+        else:
+            return "stable"
+
+    # Apply the logic to create the new column
+    monthly["period_label"] = monthly["mom_order_growth"].apply(classify_growth)
+
+    logger.info("Growth periods classified for %d months.", len(monthly))
+    return monthly
+
+
+def peak_hour_analysis(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Analyzes order volume by hour of the day to identify peak shopping times.
+
+    Args:
+        df(pd.DataFrame):Cleaned orders  containing 'purchase_hour' & 'order_id'.
+
+    Returns:
+        pd.DataFrame:Grouped DataFrame sorted by hour with 'order_count' &'pct_of_total'.
+    """
+    # 1. Group by hour and count unique orders
+    hourly = (
+        df.groupby("purchase_hour")
+        .agg(order_count=("order_id", "nunique"))
+        .reset_index()
+        .sort_values("purchase_hour")
+    )
+
+    # 2. Calculate percentage of total daily orders
+    total_orders = hourly["order_count"].sum()
+    hourly["pct_of_total"] = (hourly["order_count"] / total_orders) * 100
+
+    # 3. Identify and log the peak hour
+    peak_row = hourly.loc[hourly["order_count"].idxmax()]
+    logger.info(
+        "Peak hour is %02d:00 with %.1f%% of total orders.",
+        int(peak_row["purchase_hour"]),
+        peak_row["pct_of_total"],
+    )
+
+    return hourly
+
+
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

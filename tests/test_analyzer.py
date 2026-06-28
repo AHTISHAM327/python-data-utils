@@ -4,6 +4,7 @@ import logging
 
 # Ensure Python can find the src folder from the root directory
 sys.path.insert(0, ".")
+logger = logging.getLogger(__name__)
 
 from src.eda_pipeline import run_full_pipeline
 from src.data_loader import (
@@ -19,7 +20,6 @@ def run_tests():
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     print("\n--- Loading Pipeline ---")
-    # Adjust path if your raw data is stored elsewhere
     df = run_full_pipeline("data/raw/olist/")
 
     print("\n--- Loading Customers Table ---")
@@ -43,7 +43,6 @@ def run_tests():
 
     print("\n--- Q5: Seller Delivery Rank ---")
     q5 = add_seller_delivery_rank(df)
-    # Sub-setting columns for a cleaner print output
     print(
         q5[
             [
@@ -56,6 +55,30 @@ def run_tests():
         ].head(3)
     )
 
+    # === MOVE YOUR NEW TEST CODE HERE (INSIDE THE FUNCTION) ===
+    print("\n--- Running Time-Series Analysis ---")
+    from src.data_analyzer import (
+        monthly_order_trends,
+        weekly_volume_with_rolling_avg,
+        detect_growth_periods,
+        peak_hour_analysis,
+    )
+
+    monthly = monthly_order_trends(df)
+    print("Monthly trends:\n", monthly.tail(4))
+
+    weekly = weekly_volume_with_rolling_avg(df, window=4)
+    print("Weekly + rolling:\n", weekly.tail(6))
+
+    growth = detect_growth_periods(df)
+    print(
+        "Growth periods:\n",
+        growth[["month", "order_count", "mom_order_growth", "period_label"]].tail(8),
+    )
+
+    peak = peak_hour_analysis(df)
+    print("Peak hours:\n", peak.head(10))
+
 
 if __name__ == "__main__":
-    run_tests()
+    run_tests()  # This now runs everything cleanly inside the proper scope
