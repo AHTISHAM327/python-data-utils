@@ -7,7 +7,7 @@ sys.path.insert(0, ".")
 logger = logging.getLogger(__name__)
 
 from src.eda_pipeline import run_full_pipeline
-from src.data_loader import (
+from src.data_analyzer import (
     delivery_time_by_seller,
     late_delivery_by_month,
     worst_sellers_by_on_time_rate,
