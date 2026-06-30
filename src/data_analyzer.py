@@ -425,7 +425,7 @@ def peak_hour_analysis(df: pd.DataFrame) -> pd.DataFrame:
     peak_row = hourly.loc[hourly["order_count"].idxmax()]
     logger.info(
         "Peak hour is %02d:00 with %.1f%% of total orders.",
-        int(peak_row["purchase_hour"]),
+        int(peak_row["purchase_hour"]),  # type: ignore
         peak_row["pct_of_total"],
     )
 

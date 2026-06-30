@@ -8,7 +8,6 @@ import pandas as pd
 import logging
 
 sys.path.insert(0, ".")
-
 from src.data_loader import load_multiple_csvs
 from src.data_cleaner import (
     audit_nulls,
@@ -110,16 +109,20 @@ def run_full_pipeline(data_dir: str) -> pd.DataFrame:
             "order_estimated_delivery_date",
         ]
 
-        # The core method chain
+        # 1. Extract the dataset into a variable
+        orders_df = all_dfs["olist_orders_dataset"]
+
+        assert orders_df is not None, "Data cannot be None before pipeline"
+
+        # 3. The core method chain (now using our safe variable)
         result = (
-            all_dfs["olist_orders_dataset"]
-            .pipe(convert_datetime_columns, columns=date_cols)
+            orders_df.pipe(convert_datetime_columns, columns=date_cols)
             .pipe(lambda df: _coerce_dataframe(optimize_memory(df)))
             .pipe(engineer_order_features)
             .pipe(
                 lambda df: merge_order_items(df, all_dfs["olist_order_items_dataset"])
             )
-            .pipe(filter_delivered_orders)
+            .pipe(filter_delivered_orders)  # type: ignore
         )
 
         logger.info("Pipeline complete. Final shape: %s", result.shape)

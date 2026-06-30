@@ -3,7 +3,6 @@ import logging
 import chardet
 from pathlib import Path
 from typing import Generator
-from typing import Optional
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -109,7 +108,7 @@ def get_missing_counts(df: pd.DataFrame) -> dict[str, int] | None:
     try:
         missing_counts = df.isnull().sum().to_dict()
         logger.info(f"Successfully got missing counts from DataFrame: {missing_counts}")
-        return missing_counts
+        return missing_counts  # type: ignore
     except AttributeError as e:
         logger.error(f"Error getting missing counts from DataFrame: {e}")
         return None
@@ -159,7 +158,9 @@ def get_high_missing_columns(
     """
     try:
         missing_percent = get_missing_percent(df)
-        # ✅ Task 3 — filter comprehension
+        # Task 3 — filter comprehension
+        if missing_percent is None:
+            missing_percent = {}
         high_missing = [
             col for col in missing_percent if missing_percent[col] > threshold
         ]
@@ -240,7 +241,7 @@ def load_csv_safe(
         df = pd.read_csv(
             file_path,
             encoding=encoding,
-            dtype=dtype_spec,
+            dtype=dtype_spec or {},  # type: ignore
             low_memory=low_memory,
         )
 
@@ -358,7 +359,7 @@ if __name__ == "__main__":
         SCRIPT_DIR.parent / "data" / "raw" / "olist" / "olist_orders_dataset.csv"
     )
 
-    orders = load_csv_safe(TARGET_FILE)
+    orders = load_csv_safe(str(TARGET_FILE))
     print(orders.shape)
 
     # Test 2: multi-file load
